@@ -1,0 +1,78 @@
+package com.productorders.dao;
+
+import java.util.*;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.productorders.model.Order;
+import com.productorders.model.Product;
+
+@Repository
+public class ProductDao {
+	@Autowired
+	private SessionFactory sessionfactory;
+	
+	public void saveproduct(Product product) {
+		Session session = sessionfactory.getCurrentSession();
+		session.save(product);
+	}
+	public Product getbyidproduct(Long id) {
+		Session session = sessionfactory.getCurrentSession();
+		 return session.get(Product.class,id);
+	}
+	public List<Product> getallproducts() {
+		Session session = sessionfactory.getCurrentSession();
+		return session.createQuery("FROM Product",Product.class).list();
+	}
+	public void delete(Product product) {
+		Session session = sessionfactory.getCurrentSession();
+		session.delete(product);
+	}
+	public void updateProduct(Product updatedProduct) {
+        Product existingProduct = getbyidproduct(updatedProduct.getId());
+        updateProductDetails(existingProduct, updatedProduct);
+        System.out.println("Updating product with id: " + updatedProduct.getId());
+        sessionfactory.getCurrentSession().merge(existingProduct);
+    }
+	private void updateProductDetails(Product existingProduct, Product updatedProduct) {
+        List<Order> existingOrders = existingProduct.getOrders();
+        List<Order> newOrders = updatedProduct.getOrders();
+
+        for (Order existingOrder : new ArrayList<>(existingOrders)) {
+            if (newOrders.contains(existingOrder)) {
+                // Update existing order attributes if needed
+            } else {
+                // Remove orders that are not present in the updated product
+                existingProduct.removeOrder(existingOrder);
+            }
+        }
+
+        for (Order newOrder : newOrders) {
+            if (!existingOrders.contains(newOrder)) {
+                // Add new orders that are not present in the existing product
+                newOrder.setProduct(existingProduct);
+                existingProduct.addOrder(newOrder);
+            }
+        }
+        existingProduct.setProductname(updatedProduct.getProductname());
+        existingProduct.setProductusage(updatedProduct.getProductusage());
+	}
+	public List<Product> searchProducts(Long id, String productname, Double price) {
+        Session session = sessionfactory.getCurrentSession();
+
+        String query = "FROM Product p " +
+                "WHERE (:id IS NULL OR p.id = :id) " +
+                "OR (:productname IS NULL OR p.productname LIKE CONCAT('%', :productname, '%')) " +
+                "OR"
+                + "OR (CAST(:price AS string) IS NULL OR CAST(p.price AS string) LIKE CONCAT('%', CAST(:price AS string), '%'))";
+
+        return session.createQuery(query, Product.class)
+                .setParameter("id", id)
+                .setParameter("productname", productname)
+                .setParameter("price", price)
+                .getResultList();
+    }
+}

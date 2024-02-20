@@ -1,0 +1,2 @@
+greeting.message=!Hola,{0}!
+log.message=Properties file loaded for {0} locale

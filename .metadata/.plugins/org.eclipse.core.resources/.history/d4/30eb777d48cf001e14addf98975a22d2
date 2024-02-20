@@ -1,0 +1,53 @@
+package com.crud.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.crud.model.Student;
+import com.crud.service.studentservice;
+
+@Controller
+public class studentcontroller {
+	@Autowired
+	private studentservice studentservice;
+	
+	@RequestMapping("/form")
+	public String form() {
+		return "Studentform";
+	}
+	@PostMapping("/save")
+	public String savestudent(@ModelAttribute Student student) {
+		studentservice.savestudent(student);
+		return "redirect:/";
+	}
+	@RequestMapping("/")
+	public String list(Model m) {
+		m.addAttribute("students", studentservice.getallstudents());
+		return "display";
+	}
+	@GetMapping("delete/{id}")
+	public String delete(@PathVariable int id) {
+		studentservice.delete(id);
+		return "redirect:/";
+	}
+	@GetMapping("/edit/{id}")
+	public String edit(@PathVariable int id,Model m) {
+		Student student=studentservice.getByid(id);
+		m.addAttribute("student", student);
+		System.out.println(student);
+		return "Studentform";
+	}
+	@RequestMapping("/edit/update")
+	public String update(@ModelAttribute Student student) {
+		studentservice.edit(student);
+		return "redirect:/";
+	}
+	
+	
+}

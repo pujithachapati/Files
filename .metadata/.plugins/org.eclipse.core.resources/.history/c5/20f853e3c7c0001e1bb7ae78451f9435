@@ -1,0 +1,96 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ page import="com.productorders.model.Product,com.productorders.model.Order" isELIgnored="false"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product List</title>
+<style type="text/css">
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #FFFFFF;
+}
+
+h2 {
+    color: #333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #aab7b9;
+}
+
+a.button {
+    display: inline-block;
+    padding: 10px 15px;
+    text-decoration: none;
+    background-color: #aab7b9;
+    color: #FFFFFF;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+a.button:hover {
+    background-color: #888; /* You can choose a different color on hover */
+}
+
+.productName, .productUsage {
+    /* Adjust text color or other styles if needed */
+    color: #333;
+}
+
+.editLink, .deleteLink {
+    /* Adjust text color or other styles if needed */
+    color: #007bff; /* Blue color for links */
+}
+
+.editLink:hover, .deleteLink:hover {
+    /* Adjust text color or other styles if needed */
+    color: #0056b3; /* Darker blue on hover */
+}
+</style>
+</head>
+<body>
+    <h2>Product List</h2>
+    <table border="1">
+        <thead>
+            <tr>
+            	<th>ProductId</th>
+                <th>ProductName</th>
+                <th>ProductUsage</th>
+                <th>CustomerName</th>
+                <th>Edit</th>
+                <th>Delete</th>
+<!--                 <th>Delete</th>
+ -->            </tr>
+        </thead>
+         <a href="/ProductOrders/form"><button>Add Product</button></a>
+        
+        <tbody>
+        <c:forEach items="${products}" var="product">
+    	<tr>
+    		<td><c:out value="${product.id}" /></td>
+        	<td><c:out value="${product.productname}" /></td>
+        	<td><c:out value="${product.productusage}" /></td>
+        	<td><c:out value="${product.order.customername}" /></td>
+        	<td><a href="edit/${product.id}">Edit</a></td>        
+        	<td><a href="delete?id=${product.getId()}">Delete</a></td>
+ 		</tr>
+		</c:forEach>
+        </tbody>
+    </table>
+    <br>
+</body>
+</html>

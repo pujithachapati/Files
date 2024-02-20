@@ -1,0 +1,142 @@
+package com.productorders.dao;
+
+import java.util.*;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import com.productorders.model.Order;
+import com.productorders.model.Product;
+
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+
+
+
+@Repository
+public class ProductDao {
+	@Autowired
+	private SessionFactory sessionfactory;
+	
+	public void saveproduct(Product product) {
+		Session session = sessionfactory.getCurrentSession();
+		session.saveOrUpdate(product);
+	}
+	public Product getbyidproduct(Long id) {
+		Session session = sessionfactory.getCurrentSession();
+		 return session.get(Product.class,id);
+	}
+	public Order getbyidorder(Long id) {
+		Session session = sessionfactory.getCurrentSession();
+		return session.get(Order.class, id);
+	}
+	public List<Product> getallproducts() {
+		Session session = sessionfactory.getCurrentSession();
+		return session.createQuery("FROM Product",Product.class).list();
+	}
+	public void delete(Product product) {
+		Session session = sessionfactory.getCurrentSession();
+		session.delete(product);
+	}
+	/*
+	 * public void updateProduct(Product updatedProduct) { Session session =
+	 * sessionfactory.getCurrentSession(); Product existingProduct =
+	 * getbyidproduct(updatedProduct.getId()); List<Order> existingOrders =
+	 * existingProduct.getOrders(); List<Order> newOrders =
+	 * updatedProduct.getOrders();
+	 * 
+	 * System.out.println("Existing Orders: " + existingOrders);
+	 * System.out.println("New Orders: " + newOrders);
+	 * 
+	 * List<Order> ordersToRemove = new ArrayList<>(); boolean orderFound = false;
+	 * 
+	 * for (Order updatedOrder : newOrders) { orderFound = false; if
+	 * (updatedOrder.getId() != null) { for (int i = 0; i < existingOrders.size();
+	 * i++) { Order existingOrder = existingOrders.get(i);
+	 * 
+	 * if (updatedOrder.getId().equals(existingOrder.getId())) {
+	 * existingOrders.set(i, updatedOrder); orderFound = true; break; } } } else {
+	 * if (!orderFound) { session.clear(); existingOrders.add(updatedOrder); }
+	 * System.out.println(existingOrders); for (int i = 0; i <
+	 * existingOrders.size(); i++) { Order existingOrder = existingOrders.get(i); if
+	 * (!newOrders.contains(existingOrder)) { session.clear();
+	 * ordersToRemove.add(existingOrder); } } } }
+	 * 
+	 * existingOrders.removeAll(ordersToRemove);
+	 * 
+	 * System.out.println("Updated Orders: " + existingOrders);
+	 * existingProduct.setOrders(existingOrders); session.clear();
+	 * session.update(existingProduct); System.out.println(existingProduct); }
+	 */
+	public void updateProduct(Product updatedProduct) {
+	    Session session = sessionfactory.getCurrentSession();
+	    Product existingProduct = getbyidproduct(updatedProduct.getId());
+
+	    // Create a copy of existing orders to avoid modification while iterating
+	    List<Order> existingOrdersCopy = new ArrayList<>(existingProduct.getOrders());
+
+	    // Clear existing orders
+	    existingProduct.getOrders().clear();
+
+	    // Add new orders
+	    for (Order updatedOrder : updatedProduct.getOrders()) {
+	        updatedOrder.setProduct(existingProduct);
+	        existingProduct.getOrders().add(updatedOrder);
+	    }
+
+	    // Remove orders not present in the updated list
+	    for (Order existingOrder : existingOrdersCopy) {
+	        if (!updatedProduct.getOrders().contains(existingOrder)) {
+	            session.clear();
+	            existingOrder.setProduct(null); // Set the product to null to detach it
+	            session.delete(existingOrder);
+	        }
+	    }
+
+	    // Update existing product
+	    session.clear();
+	    session.update(existingProduct);
+	    System.out.println(existingProduct);
+	}
+
+
+
+	  public List<Product> searchProducts(Long id, String productname, Integer
+	  price) { Session session = sessionfactory.getCurrentSession();
+	  CriteriaBuilder builder = session.getCriteriaBuilder();
+	  CriteriaQuery<Product> criteriaQuery = builder.createQuery(Product.class);
+	  Root<Product> root = criteriaQuery.from(Product.class);
+	  
+	  Predicate predicate = builder.conjunction();
+	  
+	  if (id != null) { predicate = builder.and(predicate,
+	  builder.equal(root.get("id"), id)); }
+	  
+	  if (productname != null && !productname.isEmpty()) { predicate =
+	  builder.and(predicate, builder.like(builder.lower(root.get("productname")),
+	  "%" + productname.toLowerCase() + "%")); }
+	  
+	  if (price != null) { predicate = builder.and(predicate,
+	  builder.like(root.get("price").as(String.class), "%" + price.toString() +
+	  "%"));
+	  
+	  }
+	  
+	  criteriaQuery.where(predicate);
+	  
+	  return session.createQuery(criteriaQuery).getResultList(); }
+	 
+	/*
+	 * public List<Product> searchProducts(Long id,String productname,Double price){
+	 * Session session = sessionfactory.getCurrentSession(); String hql =
+	 * "FROM Product WHERE id LIKE :id AND productname LIKE:productname AND price LIKE :price"
+	 * ; Query<Product> query = session.createQuery(hql,Product.class);
+	 * query.setParameter("id","%" + id + "%"); query.setParameter("productname",
+	 * "%" + productname + "%"); query.setParameter("price", "%" + price + "%");
+	 * return query.getResultList(); }
+	 */
+}

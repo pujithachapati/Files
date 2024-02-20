@@ -1,0 +1,17 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1" isELIgnored="false"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Add new user</title>
+</head>
+<body>
+<h1>add a new user</h1>
+<form>
+	<p><lable>USER NAME: <input name="username"></lable></p>
+	<p><label>PASSWORD:<input name="password"></label></p>
+	<input type="submit" value="Sign up"/>
+</form>
+</body>
+</html>
